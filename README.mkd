@@ -1,0 +1,9 @@
+Heterogeneous Parallel Programming
+==================================
+
+This repository contains all my solutions to Coursera's [Heterogeneous Parallel
+Programming](https://www.coursera.org/course/hetero) course assignments.
+
+Resources to work offline, without the solution (just the provided templates and
+datasets) can be found in
+[ashwin/coursera-heterogeneous](https://github.com/ashwin/coursera-heterogeneous).
