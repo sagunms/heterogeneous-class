@@ -1,0 +1,46 @@
+MP1: Vector Addition
+====================
+
+Objective
+---------
+
+The purpose of this lab is to get you familiar with using the CUDA API by
+implementing a simple vector addition kernel and its associated setup code.
+
+Prerequisites
+-------------
+
+Before starting this lab, make sure that:
+
+1. You can have completed lecture 2 video
+2. You have completed MP 0
+3. You have looked over the help document.
+4. Chapter 3 of the text book would also be helpful
+
+Instructions
+------------
+
+Edit the code in the code tab to perform the following:
+
+* Allocate device memory
+* Copy host memory to device
+* Initialize thread block and kernel grid dimensions
+* Invoke CUDA kernel
+* Copy results from device to host
+* Free device memory
+* Write the CUDA kernel
+
+Instructions about where to place each part of the code is demarcated by the
+```//@@``` comment lines.
+
+Suggestions
+-----------
+
+* Develop your application incrementally
+* Do not modify the template code written -- only insert code where the
+  ```//@@``` demarcation is placed
+* Make sure to test your results against all the datasets provided
+* Do not wait until the last minute to attempt the lab.
+* Make sure that you test your program using all the datasets provided (the
+  datasets can be selected using the dropdown next to the submission button)
+

@@ -1,0 +1,39 @@
+MP0: Initial Lab Tour with Device Query
+=======================================
+
+Objective
+---------
+
+The purpose of this lab is to get you familiar with using the submission system
+for this course and the hardware used.
+
+Instructions
+------------
+
+Click on the code tab and then read the code written. Do not worry if you do not
+understand all the details of the code (the purpose is to get you familiar with
+the submission system). Once done reading, click the submit button.
+
+The submission system will automatically switch to the analysis tab, and you
+will see the following information under the Logger section.
+
+The Logger section has 3 columns:
+
+* Level is the level specified when calling the ```wbLog``` function (indicating
+  the severity of the event)
+* Location describes the ```function::line_number``` of the ```wbLog``` call
+* Message which is the message specified for the ```wbLog``` function
+
+We log the hardware information used for this course --- the details which will
+be explained in the first few lectures.
+
+* GPU card's name
+* GPU computation capabilities
+* Maximum number of block dimensions
+* Maximum number of grid dimensions
+* Maximum size of GPU memory
+* Amount of constant and share memory
+* Warp size
+
+The second section in the Analysis tab is the Attempts section, which lists past
+submissions to the system.
