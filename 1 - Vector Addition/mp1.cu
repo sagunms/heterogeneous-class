@@ -1,4 +1,3 @@
-// MP 1
 #include "wb.h"
 
 #define check(A, M) { if (!A) wbLog(ERROR, M); }

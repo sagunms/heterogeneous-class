@@ -1,4 +1,3 @@
-// MP 3: Due Sunday, Dec 30, 2012 at 11:59 p.m. PST
 #include    <wb.h>
 
 #define wbCheck(stmt)                                       \
@@ -105,7 +104,8 @@ int main (int argc, char ** argv)
 
     //@@ Initialize the grid and block dimensions here
     dim3 dimBlock(TILE_WIDTH, TILE_WIDTH, 1);
-    dim3 dimGrid((numCColumns - 1) / TILE_WIDTH + 1, (numCRows - 1) / TILE_WIDTH + 1, 1);
+    dim3 dimGrid((numCColumns - 1) / TILE_WIDTH + 1,
+                 (numCRows - 1) / TILE_WIDTH + 1, 1);
     //dim3 dimGrid(numCColumns / TILE_WIDTH, numCRows / TILE_WIDTH, 1);
     wbTime_start(Compute, "Performing CUDA computation");
     //@@ Launch the GPU Kernel here
