@@ -9,7 +9,7 @@
         }                                                   \
     } while(0)
 
-#define TILE_WIDTH  16
+#define TILE_WIDTH 32
 
 // Compute C = A * B
 __global__
@@ -22,16 +22,14 @@ void matrixMultiplyShared(float * A, float * B, float * C,
     __shared__ float ds_A[TILE_WIDTH][TILE_WIDTH];
     __shared__ float ds_B[TILE_WIDTH][TILE_WIDTH];
 
-    int bx = blockIdx.x,  by = blockIdx.y;
-    int tx = threadIdx.x, ty = threadIdx.y;
-
-    int row = by * TILE_WIDTH + ty;
-    int col = bx * TILE_WIDTH + tx;
+    int tx  = threadIdx.x, ty = threadIdx.y;
+    int row = blockIdx.y * TILE_WIDTH + threadIdx.y;
+    int col = blockIdx.x * TILE_WIDTH + threadIdx.x;
 
     float pval = 0.0;
-    int width = numAColumns > numBRows ? numAColumns : numBRows;
+    int width  = numAColumns > numBRows ? numAColumns : numBRows;
 
-    for (int m = 0; m < (width - 1) / TILE_WIDTH + 1; ++m) {
+    for (int m = 0; m < ceil((float) width / TILE_WIDTH); ++m) {
         if (row < numARows && m * TILE_WIDTH + tx < numAColumns)
             ds_A[ty][tx] = A[row * numAColumns + m * TILE_WIDTH + tx];
         else
@@ -45,9 +43,9 @@ void matrixMultiplyShared(float * A, float * B, float * C,
         __syncthreads();
         for (int k = 0; k < TILE_WIDTH && k < numAColumns && k < numBRows; ++k)
             pval += ds_A[ty][k] * ds_B[k][tx];
+        __syncthreads();
     }
 
-    __syncthreads();
     if (row < numCRows && col < numCColumns)
         C[row * numCColumns + col] = pval;
 }
@@ -104,9 +102,9 @@ int main (int argc, char ** argv)
 
     //@@ Initialize the grid and block dimensions here
     dim3 dimBlock(TILE_WIDTH, TILE_WIDTH, 1);
-    dim3 dimGrid((numCColumns - 1) / TILE_WIDTH + 1,
-                 (numCRows - 1) / TILE_WIDTH + 1, 1);
-    //dim3 dimGrid(numCColumns / TILE_WIDTH, numCRows / TILE_WIDTH, 1);
+    dim3 dimGrid(ceil((float) numCColumns / TILE_WIDTH),
+                 ceil((float) numCRows / TILE_WIDTH), 1);
+
     wbTime_start(Compute, "Performing CUDA computation");
     //@@ Launch the GPU Kernel here
     matrixMultiplyShared<<<dimGrid, dimBlock>>>(deviceA, deviceB, deviceC,
