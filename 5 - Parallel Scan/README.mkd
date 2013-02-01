@@ -1,4 +1,4 @@
-uMP5: Parallel Scan
+MP5: Parallel Scan
 ===================
 
 Objective
