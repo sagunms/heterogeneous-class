@@ -98,6 +98,7 @@ Suggestions
                     return -1;                                      \
                 }                                                   \
             } while(0)
+
 * Make sure that your algorithm handles boundary conditions where the size of
   the matrix may not be a multiple of the block/tile size
 * Make sure that your algorithm handles rectangular matrices, not just square
