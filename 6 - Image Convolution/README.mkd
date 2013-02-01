@@ -1,0 +1,201 @@
+MP6: Image Convolution
+======================
+
+MP6 is an optional assignment. You will not be penalized for not doing the
+assignment. However, if you submit working code, you will receive extra credit
+towards your final course grade. The extra credit will depend on the score you
+receive for the code.
+
+Objective
+---------
+
+The lab's objective is to implement a tiled image convolution using both shared
+and constant memory as discussed in class. Like what's discussed in class, we
+will have a constant 5x5 convolution mask, but will have arbitrarily sized image
+(We will assume the image dimensions are greater than 5x5 in this Lab).
+
+To use the constant memory for the convolution mask, you can first transfer the
+mask data to the device. Assume you decided to name the pointer to the device
+array for the mask M. As described in Lecture 7.2 (slide 7), you can use
+```const float * __restrict__ M``` as one of the parameters during your kernel
+launch. This informs the compiler that the contents of the mask array are
+constants and will only be accessed through pointer variable ```M```. This will
+enable the compiler to place the data into constant memory and allow the SM
+hardware to aggressively cache the mask data at runtime.
+
+Convolution is used in many fields, such as image processing where it is used
+for image filtering. A standard image convolution formula for a 5x5 convolution
+filter ```M``` with an Image ```I``` is:
+
+![Equation](http://latex.codecogs.com/gif.latex?$%20P_{i,j,c}%20=%20\sum_{x=0}^{4}%20\sum_{y=0}^{4}%20I_{i+x-2,j+y-2,c}%20M_{x,y}%20$ "Equation")
+
+where ```P_{i,j}``` is the output pixel at position ```i,j```, ```I_{i,j,c}```
+is the input pixel at ```i,j``` on channel ```c``` (channels will always be
+```3``` for this MP corresponding to the RGB values), and ```M_{x,y}``` is the
+mask at position ```x,y```.
+
+Prerequisites
+-------------
+
+Before starting this lab, make sure that:
+
+1. You have completed MP5
+2. You have completed lecture 7.1 through 7.3
+
+Input Data
+----------
+
+The input is an interleaved image of ```height x width x channels```. By
+interleaved, we mean that the the element ```I[y][x]``` contains three values
+representing the RGB channels. This means that to index a particular element’s
+value, you will have to do something like:
+
+    index = (yIndex*width + xIndex)*channels + channelIndex;
+
+For this assignment, the channel index is 0 for R, 1 for G, and 2 for B. So, to
+access the G value of ```I[y][x]```, you should use the linearized expression
+```I[(yIndex*width+xIndex)*channels + 1]```.
+
+For simplicity, you can assume that ```channels``` is always set to 3.
+
+Instructions
+------------
+
+Edit the code in the code tab to perform the following:
+
+* allocate device memory
+* copy host memory to device
+* initialize thread block and kernel grid dimensions
+* invoke CUDA kernel
+* copy results from device to host
+* deallocate device memory
+* implement the tiled 2D convolution kernel with adjustments for channels
+* use shared memory to reduce the number of global accesses, handle the boundary
+  conditions in when loading input list elements into the shared memory
+
+Instructions about where to place each part of the code is demarcated by the
+```//@@``` comment lines.
+
+Pseudo Code
+-----------
+
+Your sequential pseudo code would look something like
+
+    maskWidth := 5
+    maskRadius := maskWidth/2 # this is integer division, so the result is 2
+    for i from 0 to height do
+      for j from 0 to width do
+        for k from 0 to channels
+          accum := 0
+          for y from -maskRadius to maskRadius do
+            for x from -maskRadius to maskRadius do
+              xOffset := j + x
+              yOffset := i + y
+              if xOffset >= 0 && xOffset < width &&
+                 yOffset >= 0 && yOffset < height then
+                imagePixel := I[(yOffset * width + xOffset) * channels + k]
+                maskValue := K[(y+maskRadius)*maskWidth+x+maskRadius]
+                accum += imagePixel * maskValue
+              end
+            end
+          end
+          # pixels are in the range of 0 to 1
+          P[(i * width + j)*channels + k] = clamp(accum, 0, 1)
+        end
+      end
+    end
+
+where ```clamp``` is defined as
+
+    def clamp(x, start, end)
+      return min(max(x, start), end)
+    end
+
+Questions
+---------
+
+These are questions that you are encouraged to think about. You will not be
+graded on them, however, so feel free to attempt them and discuss them on the
+forum.
+
+* What is the measured floating-point computation rate for the CPU and GPU
+  kernels in this application? How do they each scale with the size of the
+  input?
+* How much time is spent as an overhead cost for using the GPU for computation?
+  Consider all code executed within your host function with the exception of the
+  kernel itself, as overhead. How does the overhead scale with the size of the
+  input?
+* What do you think happens as you increase the mask size (say to 1024) while
+  you set the block dimensions to 16x16? What do you end up spending most of
+  your time doing? Does that put other constraints on the way you’d write your
+  algorithm (think of the shared/constant memory size)?
+* Do you have to have a separate output memory buffer? Put it in another way,
+  why can’t you perform the convolution in place?
+* Name two applications of convolution.
+* What is the minimum, maximum, and average number of "real" operations that a
+  thread will perform? "Real" operations are those that directly contribute to
+  the final output value.
+* What is the identity mask?
+
+Grading
+-------
+
+You will be grading based on the following rubric:
+
+* Run time (with respect to other students): 15%
+* Correctness (generates correct values, follows objective, and deals with
+  boundary conditions correctly): 85%
+
+If we cannot compile your program, then you will get 0 points. Note that we only
+grade the last program submitted and do not accept programs beyond the deadline.
+
+For the run time grade, we will take the average time of all the final
+submissions. If your time is no more than 10% above the average time, then you
+will get full marks. Otherwise, you will lose points.
+
+Note that the datasets that we test against are not the same as the ones
+provided, so make sure to code the algorithm for correctness on general datasets
+not just the ones provided.
+
+Suggestions
+-----------
+
+* Develop your application incrementally
+* If you get stuck with boundary conditions, grab a pen and paper. It is much
+  easier to figure out the boundary conditions there.
+* Implement the serial CPU version first, this will give you an understanding of
+  the loops
+* Get the kernel working first with no optimizations.
+* Get the identity mask working, i.e. convolving with a mask that produces the
+  same input image.
+* Check for CUDA errors, here is some example ```wbCheck``` that you can use
+  (included in the template code). using this in your code would look like
+  ```wbCheck(cudaMalloc(...))```
+
+        #define wbCheck(stmt)                                       \
+            do {                                                    \
+                cudaError_t err = stmt;                             \
+                if (err != cudaSuccess) {                           \
+                    wbLog(ERROR, "Failed to run stmt ", #stmt);     \
+                    return -1;                                      \
+                }                                                   \
+            } while(0)
+
+* Make sure that your algorithm handles boundary conditions where the height and
+  width of the input image may not be a multiple of the corresponding block/tile
+  dimensions.
+* Do not modify the template code written -- only insert code where the
+  ```//@@``` demarcation is placed
+* Make sure that you test your program using all the datasets provided (the
+  datasets can be selected using the dropdown next to the submission button)
+* Even though you can submit multiple times, only your last submission is graded
+
+Input Format
+------------
+
+For people who are developing on their own system. The images are stored in PPM
+(```P6```) format, this means that you can (if you want) create your own input
+images. The easiest way to create image is via external tools. You can use
+tools such as ```bmptoppm```. The masks are stored in a CSV format. Since the
+input is small, it is best to edit it by hand.
+
