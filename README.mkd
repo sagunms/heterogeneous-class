@@ -1,6 +1,8 @@
 Heterogeneous Parallel Programming
 ==================================
 
+### November 28th 2012 Session
+
 This repository contains all my solutions to Coursera's [Heterogeneous Parallel
 Programming](https://www.coursera.org/course/hetero) course assignments.
 
